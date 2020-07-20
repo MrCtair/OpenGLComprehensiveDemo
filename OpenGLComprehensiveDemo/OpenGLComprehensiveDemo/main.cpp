@@ -62,18 +62,18 @@ void SetupRC(){
     gltMakeSphere(torusBatch, 0.4f, 40, 80);
 
 //    //5. 绘制小球;
-//    gltMakeSphere(sphereBatch, 0.1f, 13, 26);
-//    //6. 随机位置放置小球球
-//    for (int i = 0; i < NUM_SPHERES; i++) {
-//
-//        //y轴不变，X,Z产生随机值
-//        GLfloat x = ((GLfloat)((rand() % 400) - 200 ) * 0.1f);
-//        GLfloat z = ((GLfloat)((rand() % 400) - 200 ) * 0.1f);
-//
-//        //在y方向，将球体设置为0.0的位置，这使得它们看起来是飘浮在眼睛的高度
-//        //对spheres数组中的每一个顶点，设置顶点数据
-//        spheres[i].SetOrigin(x, 0.0f, z);
-//    }
+    gltMakeSphere(sphereBatch, 0.2f, 40, 80);
+    //6. 随机位置放置小球球
+    for (int i = 0; i < NUM_SPHERES; i++) {
+
+        //y轴不变，X,Z产生随机值
+        GLfloat x = ((GLfloat)((rand() % 400) - 200 ) * 0.1f);
+        GLfloat z = ((GLfloat)((rand() % 400) - 200 ) * 0.1f);
+
+        //在y方向，将球体设置为0.0的位置，这使得它们看起来是飘浮在眼睛的高度
+        //对spheres数组中的每一个顶点，设置顶点数据
+        spheres[i].SetOrigin(x, 0.0f, z);
+    }
     
 }
 
@@ -86,7 +86,7 @@ void RenderScene(void)
     //1. 颜色(地板,大球颜色,小球颜色)
     static GLfloat vFloorColor[] = {0.0f,1.0f,0.0f,1.0f};
     static GLfloat vMaxBallColor[] = {0.85f, 0.85f, 0.85f, 1.0f};
-//    static GLfloat vSpereColor[] = {0.0f,0.0f,1.0f,1.0f};
+    static GLfloat vMinBallColor[] = {0.9f, 0.1f, 0.4f, 1.0f};
     
     
     //2. 动画
@@ -96,11 +96,10 @@ void RenderScene(void)
     // 压栈（在保留操作之后，push还原）
     modelViewMatrix.PushMatrix();
     
+    M3DMatrix44f mCamera;
+    cameraFrame.GetCameraMatrix(mCamera);
+    modelViewMatrix.PushMatrix(mCamera);
     
-//    M3DMatrix44f mCamera;
-//    cameraFrame.GetCameraMatrix(mCamera);
-//    modelViewMatrix.PushMatrix(mCamera);
-//
     
     //4.地面绘制;
     shaderManager.UseStockShader(GLT_SHADER_FLAT, transformPipeline.GetModelViewProjectionMatrix(), vFloorColor);
@@ -124,22 +123,23 @@ void RenderScene(void)
     modelViewMatrix.PopMatrix();
 
 
-//    //8. 小球
-//    for (int i = 0; i < NUM_SPHERES; i++) {
-//        modelViewMatrix.PushMatrix();
-//        modelViewMatrix.MultMatrix(spheres[i]);
-//        shaderManager.UseStockShader(GLT_SHADER_POINT_LIGHT_DIFF,transformPipeline.GetModelViewMatrix(),transformPipeline.GetProjectionMatrix(),vLightPos,vSpereColor);
-//        sphereBatch.Draw();
-//        modelViewMatrix.PopMatrix();
-//
-//    }
-//
-//
+    //8. 小球
+    for (int i = 0; i < NUM_SPHERES; i++) {
+        modelViewMatrix.PushMatrix();
+        modelViewMatrix.MultMatrix(spheres[i]);
+        
+        shaderManager.UseStockShader(GLT_SHADER_POINT_LIGHT_DIFF, transformPipeline.GetModelViewMatrix(), transformPipeline.GetProjectionMatrix(), vLightPos, vMinBallColor);
+        
+        sphereBatch.Draw();
+        modelViewMatrix.PopMatrix();
+    }
+
 //    //9.让一个小球围着大球公转;
-//    modelViewMatrix.Rotate(yRot * -2.0f, 0, 1, 0);
-//    modelViewMatrix.Translate(0.8f, 0.0f, 0.0f);
-//    shaderManager.UseStockShader(GLT_SHADER_POINT_LIGHT_DIFF,transformPipeline.GetModelViewMatrix(),transformPipeline.GetProjectionMatrix(),vLightPos,vSpereColor);
-//    sphereBatch.Draw();
+    modelViewMatrix.Rotate(yRot * -2.5f, 0, 1, 0);
+    modelViewMatrix.Translate(0.6f, 0.0f, 0.0f);
+
+    shaderManager.UseStockShader(GLT_SHADER_POINT_LIGHT_DIFF,transformPipeline.GetModelViewMatrix(),transformPipeline.GetProjectionMatrix(),vLightPos,vMinBallColor);
+    sphereBatch.Draw();
 
     // 对应两次pop
     modelViewMatrix.PopMatrix();
@@ -164,7 +164,7 @@ void ChangeSize(int nWidth, int nHeight){
 void SpeacialKeys(int key,int x,int y){
     
     float linear = 0.1f;
-    float angular = float(m3dDegToRad(5.0f));
+    float angular = float(m3dDegToRad(6.0f));
     
     if (key == GLUT_KEY_UP) {
         cameraFrame.MoveForward(linear);
@@ -179,7 +179,6 @@ void SpeacialKeys(int key,int x,int y){
     if (key == GLUT_KEY_RIGHT) {
         cameraFrame.RotateWorld(-angular, 0, 1, 0);
     }
-
 }
 
 int main(int argc, char* argv[])
