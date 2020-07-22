@@ -30,7 +30,7 @@ GLMatrixStack        projectionMatrix;        // 投影矩阵堆栈
 GLFrustum            viewFrustum;            // 视景体
 GLGeometryTransform    transformPipeline;        // 几何图形变换管道
 
-GLTriangleBatch        torusBatch;             //大球
+GLTriangleBatch     torusBatch;             //大球
 GLTriangleBatch     sphereBatch;            //小球
 GLBatch             floorBatch;          //地板
 
@@ -59,9 +59,9 @@ void SetupRC(){
     floorBatch.End();
     
     //4. 设置一个球体(基于gltools模型)
-    gltMakeSphere(torusBatch, 0.4f, 40, 80);
-
-//    //5. 绘制小球;
+    gltMakeSphere(torusBatch, 0.4f, 40, 60);
+    
+    //5. 绘制小球;
     gltMakeSphere(sphereBatch, 0.2f, 40, 80);
     //6. 随机位置放置小球球
     for (int i = 0; i < NUM_SPHERES; i++) {
@@ -84,7 +84,9 @@ void RenderScene(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     //1. 颜色(地板,大球颜色,小球颜色)
+    // 网格层面颜色
     static GLfloat vFloorColor[] = {0.0f,1.0f,0.0f,1.0f};
+    //大球颜色
     static GLfloat vMaxBallColor[] = {0.85f, 0.85f, 0.85f, 1.0f};
     static GLfloat vMinBallColor[] = {0.9f, 0.1f, 0.4f, 1.0f};
     
@@ -101,7 +103,7 @@ void RenderScene(void)
     modelViewMatrix.PushMatrix(mCamera);
     
     
-    //4.地面绘制;
+    //网格层面绘制;
     shaderManager.UseStockShader(GLT_SHADER_FLAT, transformPipeline.GetModelViewProjectionMatrix(), vFloorColor);
     floorBatch.Draw();
     
@@ -135,8 +137,10 @@ void RenderScene(void)
     }
 
 //    //9.让一个小球围着大球公转;
+    //小球的旋转方向为大球的自转的逆向
     modelViewMatrix.Rotate(yRot * -2.5f, 0, 1, 0);
-    modelViewMatrix.Translate(0.6f, 0.0f, 0.0f);
+    // 大球的半径为0.4，小球的半径为0.2，所有小球需要从在x轴的方向做平移变换大于0.6
+    modelViewMatrix.Translate(0.7f, 0.0f, 0.0f);
 
     shaderManager.UseStockShader(GLT_SHADER_POINT_LIGHT_DIFF,transformPipeline.GetModelViewMatrix(),transformPipeline.GetProjectionMatrix(),vLightPos,vMinBallColor);
     sphereBatch.Draw();
@@ -162,8 +166,9 @@ void ChangeSize(int nWidth, int nHeight){
 }
 
 void SpeacialKeys(int key,int x,int y){
-    
+    //定义步长
     float linear = 0.1f;
+    //定义每次旋转的角度
     float angular = float(m3dDegToRad(6.0f));
     
     if (key == GLUT_KEY_UP) {
@@ -172,13 +177,14 @@ void SpeacialKeys(int key,int x,int y){
     if (key == GLUT_KEY_DOWN) {
         cameraFrame.MoveForward(-linear);
     }
-    
+    //只围绕y轴转，模拟人眼同一水平旋转效果
     if (key == GLUT_KEY_LEFT) {
         cameraFrame.RotateWorld(angular, 0, 1, 0);
     }
     if (key == GLUT_KEY_RIGHT) {
         cameraFrame.RotateWorld(-angular, 0, 1, 0);
     }
+    /// 说话的人呢？
 }
 
 int main(int argc, char* argv[])
